@@ -58,5 +58,7 @@ fn get_random_slap() -> &'static str {
     SLAPS[index]
 }
 
-const SLAPS: &[&str] =
-    &["https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif"];
+const SLAPS: &[&str] = &[
+    "https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif",
+    "https://c.tenor.com/d6kypk5bBL0AAAAC/slap-teddy-bear-stewie.gif",
+];
