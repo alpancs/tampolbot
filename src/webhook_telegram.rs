@@ -8,7 +8,6 @@ pub struct Update {
 
 #[derive(Deserialize)]
 struct Message {
-    message_id: i64,
     chat: Chat,
     text: String,
 }
@@ -29,9 +28,6 @@ pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
     web::Json(TelegramResponse {
         method: "sendMessage",
         chat_id: update.message.chat.id,
-        text: format!(
-            "from {}: {}",
-            update.message.message_id, update.message.text
-        ),
+        text: update.message.text.to_string(),
     })
 }
