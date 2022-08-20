@@ -1,9 +1,7 @@
-use actix_web::{web, App, HttpResponse, HttpServer, Responder};
+use actix_web::{web, App, HttpServer};
 use std::env;
 
-async fn webhook_telegram() -> impl Responder {
-    HttpResponse::Ok().body("Hey there!")
-}
+mod webhook_telegram;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -16,7 +14,7 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new().route(
             &format!("/webhook/telegram/{}", telegram_bot_token),
-            web::post().to(webhook_telegram),
+            web::post().to(webhook_telegram::handle_post),
         )
     })
     .bind(("0.0.0.0", port))?
