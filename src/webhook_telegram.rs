@@ -3,19 +3,18 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct Update {
-    #[serde(default)]
-    message: Message,
+    message: Option<Message>,
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize)]
 struct Message {
     message_id: i64,
     chat: Chat,
-    reply_to_message: Box<Message>,
+    reply_to_message: Option<Box<Message>>,
     text: String,
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize)]
 struct Chat {
     id: i64,
 }
@@ -29,19 +28,26 @@ struct TelegramResponse {
 }
 
 pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
-    if update.message.reply_to_message.message_id == 0 {
-        web::Json(TelegramResponse {
-            method: "sendMessage",
-            chat_id: update.message.chat.id,
-            text: update.message.text.to_string(),
-            reply_to_message_id: update.message.message_id,
-        })
-    } else {
-        web::Json(TelegramResponse {
-            method: "sendMessage",
-            chat_id: update.message.chat.id,
-            text: update.message.reply_to_message.text.to_string(),
-            reply_to_message_id: update.message.reply_to_message.message_id,
-        })
+    match &update.message {
+        None => web::Json(TelegramResponse {
+            method: "",
+            chat_id: 0,
+            text: "".to_string(),
+            reply_to_message_id: 0,
+        }),
+        Some(message) => match &message.reply_to_message {
+            None => web::Json(TelegramResponse {
+                method: "sendMessage",
+                chat_id: message.chat.id,
+                text: message.text.to_string(),
+                reply_to_message_id: message.message_id,
+            }),
+            Some(reply_message) => web::Json(TelegramResponse {
+                method: "sendMessage",
+                chat_id: message.chat.id,
+                text: reply_message.text.to_string(),
+                reply_to_message_id: reply_message.message_id,
+            }),
+        },
     }
 }
