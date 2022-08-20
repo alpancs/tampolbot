@@ -19,7 +19,7 @@ struct Chat {
     id: i64,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Default)]
 struct TelegramResponse {
     method: &'static str,
     chat_id: i64,
@@ -29,13 +29,7 @@ struct TelegramResponse {
 
 pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
     match &update.message {
-        None => web::Json(TelegramResponse {
-            method: "",
-            chat_id: 0,
-            text: "".to_string(),
-            reply_to_message_id: 0,
-        }),
-        Some(message) => match &message.reply_to_message {
+        Some(message) if message.text.contains("@tampolbot") => match &message.reply_to_message {
             None => web::Json(TelegramResponse {
                 method: "sendMessage",
                 chat_id: message.chat.id,
@@ -49,5 +43,6 @@ pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
                 reply_to_message_id: reply_message.message_id,
             }),
         },
+        _ => web::Json(Default::default()),
     }
 }
