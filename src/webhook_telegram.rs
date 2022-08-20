@@ -23,7 +23,7 @@ struct Chat {
 struct TelegramResponse {
     method: &'static str,
     chat_id: i64,
-    text: String,
+    animation: &'static str,
     reply_to_message_id: i64,
 }
 
@@ -31,15 +31,15 @@ pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
     match &update.message {
         Some(message) if message.text.contains("@tampolbot") => match &message.reply_to_message {
             None => web::Json(TelegramResponse {
-                method: "sendMessage",
+                method: "sendAnimation",
                 chat_id: message.chat.id,
-                text: message.text.to_string(),
+                animation: "https://tenor.com/view/teacher-slap-gif-5411272",
                 reply_to_message_id: message.message_id,
             }),
             Some(reply_message) => web::Json(TelegramResponse {
-                method: "sendMessage",
+                method: "sendAnimation",
                 chat_id: message.chat.id,
-                text: reply_message.text.to_string(),
+                animation: "https://tenor.com/view/teacher-slap-gif-5411272",
                 reply_to_message_id: reply_message.message_id,
             }),
         },
