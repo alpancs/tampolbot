@@ -33,13 +33,15 @@ pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
             None => web::Json(TelegramResponse {
                 method: "sendAnimation",
                 chat_id: message.chat.id,
-                animation: "https://tenor.com/view/teacher-slap-gif-5411272",
+                animation:
+                    "https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif",
                 reply_to_message_id: message.message_id,
             }),
             Some(reply_message) => web::Json(TelegramResponse {
                 method: "sendAnimation",
                 chat_id: message.chat.id,
-                animation: "https://tenor.com/view/teacher-slap-gif-5411272",
+                animation:
+                    "https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif",
                 reply_to_message_id: reply_message.message_id,
             }),
         },
