@@ -1,3 +1,5 @@
+use std::time::{SystemTime, UNIX_EPOCH};
+
 use actix_web::{web, Responder};
 use serde::{Deserialize, Serialize};
 
@@ -33,18 +35,28 @@ pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
             None => web::Json(TelegramResponse {
                 method: "sendAnimation",
                 chat_id: message.chat.id,
-                animation:
-                    "https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif",
+                animation: get_random_slap(),
                 reply_to_message_id: message.message_id,
             }),
             Some(reply_message) => web::Json(TelegramResponse {
                 method: "sendAnimation",
                 chat_id: message.chat.id,
-                animation:
-                    "https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif",
+                animation: get_random_slap(),
                 reply_to_message_id: reply_message.message_id,
             }),
         },
         _ => web::Json(Default::default()),
     }
 }
+
+fn get_random_slap() -> &'static str {
+    let index = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap()
+        .as_millis() as usize
+        % SLAPS.len();
+    SLAPS[index]
+}
+
+const SLAPS: &[&str] =
+    &["https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif"];
