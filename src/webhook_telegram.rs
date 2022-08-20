@@ -3,16 +3,17 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
 pub struct Update {
+    #[serde(default)]
     message: Message,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 struct Message {
     chat: Chat,
     text: String,
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Default)]
 struct Chat {
     id: i64,
 }
