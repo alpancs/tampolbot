@@ -26,7 +26,8 @@ pub struct TelegramResponse {
     method: &'static str,
     chat_id: i64,
     reply_to_message_id: i64,
-    animation: &'static str,
+    animation: Option<&'static str>,
+    text: Option<&'static str>,
 }
 
 pub async fn handle_post(update: Json<Update>) -> Either<HttpResponse, Json<TelegramResponse>> {
@@ -43,9 +44,17 @@ fn handle_message(message: &Message) -> Either<HttpResponse, Json<TelegramRespon
                 method: "sendAnimation",
                 chat_id: message.chat.id,
                 reply_to_message_id: reply_msg.message_id,
-                animation: get_random_slap(),
+                animation: Some(get_random_slap()),
+                text: None,
             }))
         }
+        (Some(text), None) if triggering_tampol(text) => Either::Right(Json(TelegramResponse {
+            method: "sendMessage",
+            chat_id: message.chat.id,
+            reply_to_message_id: message.message_id,
+            animation: None,
+            text: Some("mau nampol pesan yang mana?"),
+        })),
         _ => Either::Left(HttpResponse::Ok().finish()),
     }
 }
