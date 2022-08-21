@@ -68,6 +68,7 @@ fn get_random_slap() -> &'static str {
 
 const SLAPS: &[&str] = &[
     "https://thumbs.gfycat.com/WebbedSophisticatedChamois-size_restricted.gif",
+    "https://c.tenor.com/KkRKZe-5sg0AAAAC/teacher-slap.gif",
     "https://c.tenor.com/d6kypk5bBL0AAAAC/slap-teddy-bear-stewie.gif",
     "https://c.tenor.com/hIMmJnbaNBwAAAAM/slap-sanmanassullavarkku-samadhanam.gif",
     "https://media.giphy.com/media/3XlEk2RxPS1m8/giphy.gif",
