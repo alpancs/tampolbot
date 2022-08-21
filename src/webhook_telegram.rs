@@ -13,7 +13,7 @@ struct Message {
     message_id: i64,
     chat: Chat,
     reply_to_message: Option<Box<Message>>,
-    text: String,
+    text: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -31,7 +31,13 @@ struct TelegramResponse {
 
 pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
     match &update.message {
-        Some(message) if message.text.contains("@tampolbot") => {
+        Some(message)
+            if message
+                .text
+                .as_deref()
+                .unwrap_or_default()
+                .contains("@tampolbot") =>
+        {
             let reply_to_message_id = match &message.reply_to_message {
                 None => message.message_id,
                 Some(reply_message) => reply_message.message_id,
