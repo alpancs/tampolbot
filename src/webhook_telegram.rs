@@ -31,20 +31,18 @@ struct TelegramResponse {
 
 pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
     match &update.message {
-        Some(message) if message.text.contains("@tampolbot") => match &message.reply_to_message {
-            None => web::Json(TelegramResponse {
+        Some(message) if message.text.contains("@tampolbot") => {
+            let reply_to_message_id = match &message.reply_to_message {
+                None => message.message_id,
+                Some(reply_message) => reply_message.message_id,
+            };
+            web::Json(TelegramResponse {
                 method: "sendAnimation",
                 chat_id: message.chat.id,
                 animation: get_random_slap(),
-                reply_to_message_id: message.message_id,
-            }),
-            Some(reply_message) => web::Json(TelegramResponse {
-                method: "sendAnimation",
-                chat_id: message.chat.id,
-                animation: get_random_slap(),
-                reply_to_message_id: reply_message.message_id,
-            }),
-        },
+                reply_to_message_id,
+            })
+        }
         _ => web::Json(Default::default()),
     }
 }
