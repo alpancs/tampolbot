@@ -25,8 +25,8 @@ struct Chat {
 pub struct TelegramResponse {
     method: &'static str,
     chat_id: i64,
-    animation: &'static str,
     reply_to_message_id: i64,
+    animation: &'static str,
 }
 
 pub async fn handle_post(update: web::Json<Update>) -> web::Json<TelegramResponse> {
@@ -43,13 +43,17 @@ fn handle_message(message: &Message) -> web::Json<TelegramResponse> {
         } if text.contains("@tampolbot") => web::Json(TelegramResponse {
             method: "sendAnimation",
             chat_id: message.chat.id,
+            reply_to_message_id: get_reply_msg_id(message),
             animation: get_random_slap(),
-            reply_to_message_id: match message.reply_to_message {
-                None => message.message_id,
-                Some(ref reply_message) => reply_message.message_id,
-            },
         }),
         _ => web::Json(Default::default()),
+    }
+}
+
+fn get_reply_msg_id(message: &Message) -> i64 {
+    match message.reply_to_message {
+        None => message.message_id,
+        Some(ref reply_message) => reply_message.message_id,
     }
 }
 
