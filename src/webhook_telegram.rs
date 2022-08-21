@@ -30,29 +30,28 @@ pub struct TelegramResponse {
 }
 
 pub async fn handle_post(update: Json<Update>) -> Either<HttpResponse, Json<TelegramResponse>> {
-    match update.message {
-        None => Either::Left(HttpResponse::Ok().finish()),
-        Some(ref message) => handle_message(message),
-    }
-}
-
-fn handle_message(message: &Message) -> Either<HttpResponse, Json<TelegramResponse>> {
-    match message.text {
-        Some(ref text) if text.contains("@tampolbot") => Either::Right(Json(TelegramResponse {
-            method: "sendAnimation",
-            chat_id: message.chat.id,
-            reply_to_message_id: get_reply_msg_id(message),
-            animation: get_random_slap(),
-        })),
+    match update.message.as_ref() {
+        Some(message) => handle_message(message),
         _ => Either::Left(HttpResponse::Ok().finish()),
     }
 }
 
-fn get_reply_msg_id(message: &Message) -> i64 {
-    match message.reply_to_message {
-        None => message.message_id,
-        Some(ref reply_message) => reply_message.message_id,
+fn handle_message(message: &Message) -> Either<HttpResponse, Json<TelegramResponse>> {
+    match (message.text.as_ref(), message.reply_to_message.as_ref()) {
+        (Some(text), Some(reply_msg)) if triggering_tampol(text) => {
+            Either::Right(Json(TelegramResponse {
+                method: "sendAnimation",
+                chat_id: message.chat.id,
+                reply_to_message_id: reply_msg.message_id,
+                animation: get_random_slap(),
+            }))
+        }
+        _ => Either::Left(HttpResponse::Ok().finish()),
     }
+}
+
+fn triggering_tampol(text: &str) -> bool {
+    text.contains("@tampolbot") || text.contains("/tampol")
 }
 
 fn get_random_slap() -> &'static str {
