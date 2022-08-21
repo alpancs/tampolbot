@@ -1,6 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use actix_web::web;
+use actix_web::{web::Json, Either, HttpResponse};
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -21,7 +21,7 @@ struct Chat {
     id: i64,
 }
 
-#[derive(Serialize, Default)]
+#[derive(Serialize)]
 pub struct TelegramResponse {
     method: &'static str,
     chat_id: i64,
@@ -29,24 +29,22 @@ pub struct TelegramResponse {
     animation: &'static str,
 }
 
-pub async fn handle_post(update: web::Json<Update>) -> web::Json<TelegramResponse> {
+pub async fn handle_post(update: Json<Update>) -> Either<HttpResponse, Json<TelegramResponse>> {
     match update.message {
+        None => Either::Left(HttpResponse::Ok().finish()),
         Some(ref message) => handle_message(message),
-        _ => web::Json(Default::default()),
     }
 }
 
-fn handle_message(message: &Message) -> web::Json<TelegramResponse> {
-    match message {
-        Message {
-            text: Some(text), ..
-        } if text.contains("@tampolbot") => web::Json(TelegramResponse {
+fn handle_message(message: &Message) -> Either<HttpResponse, Json<TelegramResponse>> {
+    match message.text {
+        Some(ref text) if text.contains("@tampolbot") => Either::Right(Json(TelegramResponse {
             method: "sendAnimation",
             chat_id: message.chat.id,
             reply_to_message_id: get_reply_msg_id(message),
             animation: get_random_slap(),
-        }),
-        _ => web::Json(Default::default()),
+        })),
+        _ => Either::Left(HttpResponse::Ok().finish()),
     }
 }
 
