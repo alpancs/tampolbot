@@ -1,6 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use actix_web::{web, Responder};
+use actix_web::web;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -22,33 +22,33 @@ struct Chat {
 }
 
 #[derive(Serialize, Default)]
-struct TelegramResponse {
+pub struct TelegramResponse {
     method: &'static str,
     chat_id: i64,
     animation: &'static str,
     reply_to_message_id: i64,
 }
 
-pub async fn handle_post(update: web::Json<Update>) -> impl Responder {
-    match &update.message {
-        Some(message)
-            if message
-                .text
-                .as_deref()
-                .unwrap_or_default()
-                .contains("@tampolbot") =>
-        {
-            let reply_to_message_id = match &message.reply_to_message {
+pub async fn handle_post(update: web::Json<Update>) -> web::Json<TelegramResponse> {
+    match update.message {
+        Some(ref message) => handle_message(message),
+        _ => web::Json(Default::default()),
+    }
+}
+
+fn handle_message(message: &Message) -> web::Json<TelegramResponse> {
+    match message {
+        Message {
+            text: Some(text), ..
+        } if text.contains("@tampolbot") => web::Json(TelegramResponse {
+            method: "sendAnimation",
+            chat_id: message.chat.id,
+            animation: get_random_slap(),
+            reply_to_message_id: match message.reply_to_message {
                 None => message.message_id,
-                Some(reply_message) => reply_message.message_id,
-            };
-            web::Json(TelegramResponse {
-                method: "sendAnimation",
-                chat_id: message.chat.id,
-                animation: get_random_slap(),
-                reply_to_message_id,
-            })
-        }
+                Some(ref reply_message) => reply_message.message_id,
+            },
+        }),
         _ => web::Json(Default::default()),
     }
 }
