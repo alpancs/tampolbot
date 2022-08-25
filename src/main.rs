@@ -1,23 +1,19 @@
-use actix_web::{web, App, HttpServer};
-use std::env;
-
 mod webhook_telegram;
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    let port = env::var("PORT")
-        .ok()
-        .and_then(|x| x.parse().ok())
-        .unwrap_or(8080);
-    let telegram_bot_token = env::var("TELEGRAM_BOT_TOKEN").expect("TELEGRAM_BOT_TOKEN");
+use std::env;
 
-    HttpServer::new(move || {
-        App::new().route(
-            &format!("/webhook/telegram/{}", telegram_bot_token),
-            web::post().to(webhook_telegram::handle_post),
-        )
-    })
-    .bind(("0.0.0.0", port))?
-    .run()
-    .await
+use axum::{routing::post, Router};
+
+#[tokio::main]
+async fn main() {
+    let telegram_bot_token = env::var("TELEGRAM_BOT_TOKEN").expect("TELEGRAM_BOT_TOKEN not set");
+    let app = Router::new().route(
+        &format!("/webhook/telegram/{}", telegram_bot_token),
+        post(webhook_telegram::handle_post),
+    );
+    let port = env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    axum::Server::bind(&format!("0.0.0.0:{}", port).parse().unwrap())
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }

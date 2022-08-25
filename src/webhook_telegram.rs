@@ -1,6 +1,6 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use actix_web::{web::Json, Either, HttpResponse};
+use axum::Json;
 use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize)]
@@ -21,7 +21,7 @@ struct Chat {
     id: i64,
 }
 
-#[derive(Serialize)]
+#[derive(Serialize, Default)]
 pub struct TelegramResponse {
     method: &'static str,
     chat_id: i64,
@@ -30,32 +30,30 @@ pub struct TelegramResponse {
     text: Option<&'static str>,
 }
 
-pub async fn handle_post(update: Json<Update>) -> Either<HttpResponse, Json<TelegramResponse>> {
+pub async fn handle_post(update: Json<Update>) -> Json<TelegramResponse> {
     match update.message.as_ref() {
         Some(message) => handle_message(message),
-        _ => Either::Left(HttpResponse::Ok().finish()),
+        _ => Default::default(),
     }
 }
 
-fn handle_message(message: &Message) -> Either<HttpResponse, Json<TelegramResponse>> {
+fn handle_message(message: &Message) -> Json<TelegramResponse> {
     match (message.text.as_ref(), message.reply_to_message.as_ref()) {
-        (Some(text), Some(reply_msg)) if triggering_tampol(text) => {
-            Either::Right(Json(TelegramResponse {
-                method: "sendAnimation",
-                chat_id: message.chat.id,
-                reply_to_message_id: reply_msg.message_id,
-                animation: Some(get_random_slap()),
-                text: None,
-            }))
-        }
-        (Some(text), None) if triggering_tampol(text) => Either::Right(Json(TelegramResponse {
+        (Some(text), Some(reply_msg)) if triggering_tampol(text) => Json(TelegramResponse {
+            method: "sendAnimation",
+            chat_id: message.chat.id,
+            reply_to_message_id: reply_msg.message_id,
+            animation: Some(get_random_slap()),
+            text: None,
+        }),
+        (Some(text), None) if triggering_tampol(text) => Json(TelegramResponse {
             method: "sendMessage",
             chat_id: message.chat.id,
             reply_to_message_id: message.message_id,
             animation: None,
             text: Some("mau nampol pesan yang mana?"),
-        })),
-        _ => Either::Left(HttpResponse::Ok().finish()),
+        }),
+        _ => Default::default(),
     }
 }
 
